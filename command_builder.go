@@ -356,7 +356,9 @@ func (cb *CommandBuilder) addFlags(cmd *cobra.Command, flags []FlagConfig) error
 		case "int":
 			defaultInt := 0
 			if flag.DefaultValue != "" {
-				fmt.Sscanf(flag.DefaultValue, "%d", &defaultInt)
+				if _, err := fmt.Sscanf(flag.DefaultValue, "%d", &defaultInt); err != nil {
+					return fmt.Errorf("invalid int default value %q for flag %s: %w", flag.DefaultValue, flag.Name, err)
+				}
 			}
 			if flag.Shorthand != "" {
 				flagSet.IntP(flag.Name, flag.Shorthand, defaultInt, flag.Usage)
@@ -375,11 +377,15 @@ func (cb *CommandBuilder) addFlags(cmd *cobra.Command, flags []FlagConfig) error
 		}
 
 		if flag.Required {
-			cmd.MarkFlagRequired(flag.Name)
+			if err := cmd.MarkFlagRequired(flag.Name); err != nil {
+				return fmt.Errorf("failed to mark flag %s as required: %w", flag.Name, err)
+			}
 		}
 
 		if flag.Hidden {
-			flagSet.MarkHidden(flag.Name)
+			if err := flagSet.MarkHidden(flag.Name); err != nil {
+				return fmt.Errorf("failed to mark flag %s as hidden: %w", flag.Name, err)
+			}
 		}
 	}
 
