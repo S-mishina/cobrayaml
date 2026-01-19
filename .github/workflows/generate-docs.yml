@@ -1,0 +1,33 @@
+name: Generate Documentation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "*.go"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+
+      - name: Generate documentation
+        run: go generate ./...
+
+      - name: Commit and push
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs: auto-generate README from code"
+          file_pattern: "README.md"

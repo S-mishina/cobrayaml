@@ -8,6 +8,12 @@ YAML-based command builder for [cobra](https://github.com/spf13/cobra) CLI appli
 go get github.com/S-mishina/cobrayaml
 ```
 
+### CLI Tool
+
+```bash
+go install github.com/S-mishina/cobrayaml/cmd/cobrayaml@latest
+```
+
 ## Quick Start
 
 <!-- QUICK_START_START -->
@@ -150,7 +156,7 @@ go run . --version
 | `aliases`  | `[]string`                 | Alternative command names                              |
 | `short`    | `string`                   | Brief description shown in help                        |
 | `long`     | `string`                   | Detailed description                                   |
-| `args`     | `ArgsConfig`               | Argument validation configuration                      |
+| `args`     | `*ArgsConfig`              | Argument validation configuration                      |
 | `run_func` | `string`                   | Name of the handler function                           |
 | `flags`    | `[]FlagConfig`             | List of flag definitions                               |
 | `commands` | `map[string]CommandConfig` | Nested subcommands                                     |
@@ -186,6 +192,64 @@ root:
 ```
 
 <!-- YAML_REFERENCE_END -->
+
+## Code Generation
+
+<!-- CODE_GEN_START -->
+
+Generate handler function stubs from your YAML configuration:
+
+```bash
+# Create a new commands.yaml template
+cobrayaml init my-app
+
+# Generate handler stubs
+cobrayaml gen commands.yaml
+
+# Specify output file and package name
+cobrayaml gen commands.yaml -o handlers.go -p main
+```
+
+### Generated Code Example
+
+From this YAML:
+
+```yaml
+name: "example"
+root:
+  use: "example"
+commands:
+  add:
+    use: "add <name>"
+    short: "Add an item"
+    run_func: "runAdd"
+    flags:
+      - name: "force"
+        shorthand: "f"
+        type: bool
+        usage: "Force the operation"
+    args:
+      type: exact
+      count: 1
+```
+
+Generates:
+
+```go
+func runAdd(cmd *cobra.Command, args []string) error {
+ // Auto-generated flag/arg getters
+ force, _ := cmd.Flags().GetBool("force")
+ arg0 := args[0]
+
+ // TODO: Implement your logic here
+ _ = force
+ _ = arg0
+
+ return nil
+}
+```
+
+<!-- CODE_GEN_END -->
 
 ## License
 

@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: write
+  contents: read
   pull-requests: write
 
 jobs:
@@ -32,31 +32,3 @@ jobs:
       severity: 'HIGH,CRITICAL'
       ignore-unfixed: true
       exit-code: '1'
-
-  auto-approve:
-    name: Auto Approve Bot PRs
-    needs: [lint, build, test, security]
-    if: |
-      !cancelled() &&
-      !contains(needs.*.result, 'failure') &&
-      (github.actor == 'dependabot[bot]' || github.actor == 'renovate[bot]') &&
-      github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Approve PR
-        run: gh pr review --approve "${{ github.event.pull_request.html_url }}"
-        env:
-          GH_TOKEN: ${{ github.token }}
-
-  auto-merge:
-    name: Auto Merge Bot PRs
-    needs: [auto-approve]
-    if: |
-      !cancelled() &&
-      needs.auto-approve.result == 'success'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Merge PR
-        run: gh pr merge --squash "${{ github.event.pull_request.html_url }}"
-        env:
-          GH_TOKEN: ${{ github.token }}
