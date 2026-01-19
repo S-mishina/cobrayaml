@@ -124,7 +124,7 @@ type CommandConfig struct {
 	Use      string                   `yaml:"use"`
 	Aliases  []string                 `yaml:"aliases,omitempty"`
 	Short    string                   `yaml:"short"`
-	Long     string                   `yaml:"long"`
+	Long     string                   `yaml:"long,omitempty"`
 	Args     *ArgsConfig              `yaml:"args,omitempty"`
 	RunFunc  string                   `yaml:"run_func,omitempty"`
 	Flags    []FlagConfig             `yaml:"flags,omitempty"`
@@ -176,7 +176,7 @@ type FlagConfig struct {
 //	    run_func: "runList"
 type ToolConfig struct {
 	Name        string                    `yaml:"name"`
-	Description string                    `yaml:"description"`
+	Description string                    `yaml:"description,omitempty"`
 	Version     string                    `yaml:"version,omitempty"`
 	Root        CommandConfig             `yaml:"root"`
 	Commands    map[string]CommandConfig  `yaml:"commands,omitempty"`

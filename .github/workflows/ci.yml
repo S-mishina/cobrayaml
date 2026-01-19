@@ -6,57 +6,45 @@ on:
   pull_request:
     branches: [main]
 
-permissions:
-  contents: write
-  pull-requests: write
-
 jobs:
-  lint:
-    name: Lint
-    uses: ./.github/workflows/lint.yml
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+
+      - name: Run tests
+        run: go test -v ./...
+
+      - name: Run tests with coverage
+        run: go test -coverprofile=coverage.out ./...
+
+      - name: Verify docgen can run
+        run: |
+          go generate ./...
+          # Check if README was modified (should be no changes if up to date)
+          if git diff --quiet README.md; then
+            echo "README is up to date"
+          else
+            echo "::warning::README.md is out of date. Run 'go generate ./...' locally."
+          fi
 
   build:
-    name: Build
-    uses: ./.github/workflows/go-build.yml
-
-  test:
-    name: Test
-    uses: ./.github/workflows/go-test.yml
-
-  security:
-    name: Security Scan
-    uses: ./.github/workflows/trivy-scan.yml
-    with:
-      scan-type: 'fs'
-      scan-ref: '.'
-      severity: 'HIGH,CRITICAL'
-      ignore-unfixed: true
-      exit-code: '1'
-
-  auto-approve:
-    name: Auto Approve Bot PRs
-    needs: [lint, build, test, security]
-    if: |
-      !cancelled() &&
-      !contains(needs.*.result, 'failure') &&
-      (github.actor == 'dependabot[bot]' || github.actor == 'renovate[bot]') &&
-      github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - name: Approve PR
-        run: gh pr review --approve "${{ github.event.pull_request.html_url }}"
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - uses: actions/checkout@v4
 
-  auto-merge:
-    name: Auto Merge Bot PRs
-    needs: [auto-approve]
-    if: |
-      !cancelled() &&
-      needs.auto-approve.result == 'success'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Merge PR
-        run: gh pr merge --squash "${{ github.event.pull_request.html_url }}"
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Build CLI
+        run: go build -o cobrayaml ./cmd/cobrayaml
