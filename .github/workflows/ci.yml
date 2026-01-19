@@ -7,44 +7,24 @@ on:
     branches: [main]
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.23"
-
-      - name: Run tests
-        run: go test -v ./...
-
-      - name: Run tests with coverage
-        run: go test -coverprofile=coverage.out ./...
-
-      - name: Verify docgen can run
-        run: |
-          go generate ./...
-          # Check if README was modified (should be no changes if up to date)
-          if git diff --quiet README.md; then
-            echo "README is up to date"
-          else
-            echo "::warning::README.md is out of date. Run 'go generate ./...' locally."
-          fi
+  lint:
+    name: Lint
+    uses: ./.github/workflows/lint.yml
 
   build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+    name: Build
+    uses: ./.github/workflows/go-build.yml
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.23"
+  test:
+    name: Test
+    uses: ./.github/workflows/go-test.yml
 
-      - name: Build
-        run: go build -v ./...
-
-      - name: Build CLI
-        run: go build -o cobrayaml ./cmd/cobrayaml
+  security:
+    name: Security Scan
+    uses: ./.github/workflows/trivy-scan.yml
+    with:
+      scan-type: 'fs'
+      scan-ref: '.'
+      severity: 'HIGH,CRITICAL'
+      ignore-unfixed: true
+      exit-code: '1'
