@@ -1,0 +1,48 @@
+name: Trivy Security Scan
+
+on:
+  workflow_call:
+    inputs:
+      scan-type:
+        description: 'Scan type (fs or image)'
+        required: false
+        type: string
+        default: 'fs'
+      scan-ref:
+        description: 'Path to scan (for fs) or image name (for image)'
+        required: false
+        type: string
+        default: '.'
+      severity:
+        description: 'Severity levels to report'
+        required: false
+        type: string
+        default: 'HIGH,CRITICAL'
+      ignore-unfixed:
+        description: 'Ignore unfixed vulnerabilities'
+        required: false
+        type: boolean
+        default: true
+      exit-code:
+        description: 'Exit code when vulnerabilities found (0 = warn only, 1 = fail)'
+        required: false
+        type: string
+        default: '1'
+
+jobs:
+  scan:
+    name: Vulnerability Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: ${{ inputs.scan-type }}
+          scan-ref: ${{ inputs.scan-ref }}
+          severity: ${{ inputs.severity }}
+          ignore-unfixed: ${{ inputs.ignore-unfixed }}
+          exit-code: ${{ inputs.exit-code }}
+          format: 'table'
