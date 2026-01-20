@@ -23,6 +23,10 @@ jobs:
     name: Test
     uses: ./.github/workflows/go-test.yml
 
+  e2e:
+    name: E2E Test
+    uses: ./.github/workflows/e2e-test.yml
+
   security:
     name: Security Scan
     uses: ./.github/workflows/trivy-scan.yml
