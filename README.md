@@ -120,60 +120,60 @@ go run . --version
 
 ### Flag Types
 
-| Type          | Go Type    | Example        |
-| ------------- | ---------- | -------------- |
-| `string`      | `string`   | `--name foo`   |
-| `bool`        | `bool`     | `--debug`      |
-| `int`         | `int`      | `--count 10`   |
+| Type | Go Type | Example |
+|------|---------|--------|
+| `string` | `string` | `--name foo` |
+| `bool` | `bool` | `--debug` |
+| `int` | `int` | `--count 10` |
 | `stringSlice` | `[]string` | `--tags a,b,c` |
 
 ### Args Validation
 
-| Type    | Description             | Config                            |
-| ------- | ----------------------- | --------------------------------- |
-| `none`  | No arguments allowed    | `type: none`                      |
-| `any`   | Any number of arguments | `type: any`                       |
-| `exact` | Exact number required   | `type: exact`, `count: N`         |
-| `min`   | Minimum number          | `type: min`, `min: N`             |
-| `max`   | Maximum number          | `type: max`, `max: N`             |
-| `range` | Range of arguments      | `type: range`, `min: N`, `max: N` |
+| Type | Description | Config |
+|------|-------------|--------|
+| `none` | No arguments allowed | `type: none` |
+| `any` | Any number of arguments | `type: any` |
+| `exact` | Exact number required | `type: exact`, `count: N` |
+| `min` | Minimum number | `type: min`, `min: N` |
+| `max` | Maximum number | `type: max`, `max: N` |
+| `range` | Range of arguments | `type: range`, `min: N`, `max: N` |
 
 ### ToolConfig (Root)
 
-| YAML Key      | Type                       | Description                         |
-| ------------- | -------------------------- | ----------------------------------- |
-| `name`        | `string`                   | Tool name                           |
-| `description` | `string`                   | Tool description                    |
-| `version`     | `string`                   | Tool version (shown with --version) |
-| `root`        | `CommandConfig`            | Root command configuration          |
-| `commands`    | `map[string]CommandConfig` | Top-level subcommands               |
+| YAML Key | Type | Description |
+|----------|------|-------------|
+| `name` | `string` | Tool name |
+| `description` | `string` | Tool description |
+| `version` | `string` | Tool version (shown with --version) |
+| `root` | `CommandConfig` | Root command configuration |
+| `commands` | `map[string]CommandConfig` | Top-level subcommands |
 
 ### CommandConfig
 
-| YAML Key   | Type                       | Description                                            |
-| ---------- | -------------------------- | ------------------------------------------------------ |
-| `use`      | `string`                   | Command name and argument pattern (e.g., `add <name>`) |
-| `aliases`  | `[]string`                 | Alternative command names                              |
-| `short`    | `string`                   | Brief description shown in help                        |
-| `long`     | `string`                   | Detailed description                                   |
-| `args`     | `*ArgsConfig`              | Argument validation configuration                      |
-| `run_func` | `string`                   | Name of the handler function                           |
-| `flags`    | `[]FlagConfig`             | List of flag definitions                               |
-| `commands` | `map[string]CommandConfig` | Nested subcommands                                     |
-| `hidden`   | `bool`                     | Hide command from help output                          |
+| YAML Key | Type | Description |
+|----------|------|-------------|
+| `use` | `string` | Command name and argument pattern (e.g., `add <name>`) |
+| `aliases` | `[]string` | Alternative command names |
+| `short` | `string` | Brief description shown in help |
+| `long` | `string` | Detailed description |
+| `args` | `*ArgsConfig` | Argument validation configuration |
+| `run_func` | `string` | Name of the handler function |
+| `flags` | `[]FlagConfig` | List of flag definitions |
+| `commands` | `map[string]CommandConfig` | Nested subcommands |
+| `hidden` | `bool` | Hide command from help output |
 
 ### FlagConfig
 
-| YAML Key     | Type     | Required | Description                                   |
-| ------------ | -------- | -------- | --------------------------------------------- |
-| `name`       | `string` | Yes      | Flag name (e.g., `namespace` for --namespace) |
-| `shorthand`  | `string` |          | Short flag (e.g., `n` for -n)                 |
-| `type`       | `string` | Yes      | Flag type (string, bool, int, stringSlice)    |
-| `default`    | `string` |          | Default value                                 |
-| `usage`      | `string` | Yes      | Description shown in help                     |
-| `required`   | `bool`   |          | Mark flag as required                         |
-| `persistent` | `bool`   |          | Inherit flag to all subcommands               |
-| `hidden`     | `bool`   |          | Hide flag from help output                    |
+| YAML Key | Type | Required | Description |
+|----------|------|----------|-------------|
+| `name` | `string` | Yes | Flag name (e.g., `namespace` for --namespace) |
+| `shorthand` | `string` |  | Short flag (e.g., `n` for -n) |
+| `type` | `string` | Yes | Flag type (string, bool, int, stringSlice) |
+| `default` | `string` |  | Default value |
+| `usage` | `string` | Yes | Description shown in help |
+| `required` | `bool` |  | Mark flag as required |
+| `persistent` | `bool` |  | Inherit flag to all subcommands |
+| `hidden` | `bool` |  | Hide flag from help output |
 
 ### Hidden Commands/Flags
 
@@ -218,6 +218,7 @@ From this YAML:
 name: "example"
 root:
   use: "example"
+  short: "Example CLI tool"
 commands:
   add:
     use: "add <name>"
@@ -237,15 +238,15 @@ Generates:
 
 ```go
 func runAdd(cmd *cobra.Command, args []string) error {
- // Auto-generated flag/arg getters
- force, _ := cmd.Flags().GetBool("force")
- arg0 := args[0]
+	// Auto-generated flag/arg getters
+	force, _ := cmd.Flags().GetBool("force")
+	arg0 := args[0]
 
- // TODO: Implement your logic here
- _ = force
- _ = arg0
+	// TODO: Implement your logic here
+	_ = force
+	_ = arg0
 
- return nil
+	return nil
 }
 ```
 
