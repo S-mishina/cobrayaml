@@ -583,3 +583,28 @@ func TestFilterVisibleFlags(t *testing.T) {
 		}
 	}
 }
+
+func TestGenerator_GenerateDocsToFile_WriteError(t *testing.T) {
+	yamlContent := `
+name: test-tool
+description: Test tool
+root:
+  use: test-tool
+  short: Test tool
+commands:
+  hello:
+    use: hello
+    short: Say hello
+    run_func: runHello
+`
+	gen, err := NewGeneratorFromString(yamlContent)
+	if err != nil {
+		t.Fatalf("NewGeneratorFromString() error = %v", err)
+	}
+
+	// Try to write to an invalid path (nonexistent directory)
+	err = gen.GenerateDocsToFile("/nonexistent/path/README.md")
+	if err == nil {
+		t.Error("expected error when writing to invalid path")
+	}
+}
