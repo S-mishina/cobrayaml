@@ -41,6 +41,7 @@ name: minimal
 description: Minimal config
 root:
   use: minimal
+  short: Minimal command
 `,
 			wantName: "minimal",
 			wantDesc: "Minimal config",
@@ -116,6 +117,7 @@ name: test
 description: test
 root:
   use: test
+  short: Test command
 commands:
   run:
     use: run
@@ -251,6 +253,7 @@ name: args-test
 description: Args test
 root:
   use: args-test
+  short: Args test command
 commands:
   test:
     use: test
@@ -268,6 +271,7 @@ name: args-test
 description: Args test
 root:
   use: args-test
+  short: Args test command
 commands:
   test:
     use: test
@@ -285,6 +289,7 @@ name: args-test
 description: Args test
 root:
   use: args-test
+  short: Args test command
 commands:
   test:
     use: test
@@ -303,6 +308,7 @@ name: args-test
 description: Args test
 root:
   use: args-test
+  short: Args test command
 commands:
   test:
     use: test
@@ -321,6 +327,7 @@ name: args-test
 description: Args test
 root:
   use: args-test
+  short: Args test command
 commands:
   test:
     use: test
@@ -339,6 +346,7 @@ name: args-test
 description: Args test
 root:
   use: args-test
+  short: Args test command
 commands:
   test:
     use: test
@@ -357,6 +365,7 @@ name: args-test
 description: Args test
 root:
   use: args-test
+  short: Args test command
 commands:
   test:
     use: test
@@ -375,6 +384,7 @@ name: args-test
 description: Args test
 root:
   use: args-test
+  short: Args test command
 commands:
   test:
     use: test
@@ -393,6 +403,7 @@ name: args-test
 description: Args test
 root:
   use: args-test
+  short: Args test command
 commands:
   test:
     use: test
@@ -412,6 +423,7 @@ name: args-test
 description: Args test
 root:
   use: args-test
+  short: Args test command
 commands:
   test:
     use: test
@@ -431,6 +443,7 @@ name: args-test
 description: Args test
 root:
   use: args-test
+  short: Args test command
 commands:
   test:
     use: test
@@ -450,6 +463,7 @@ name: args-test
 description: Args test
 root:
   use: args-test
+  short: Args test command
 commands:
   test:
     use: test
@@ -467,6 +481,7 @@ name: args-test
 description: Args test
 root:
   use: args-test
+  short: Args test command
 commands:
   test:
     use: test
@@ -512,6 +527,7 @@ name: flag-test
 description: Flag test
 root:
   use: flag-test
+  short: Flag test command
 commands:
   test:
     use: test
@@ -598,6 +614,7 @@ name: unsupported-test
 description: Test
 root:
   use: test
+  short: Test command
 commands:
   test:
     use: test
@@ -624,6 +641,7 @@ name: unregistered-test
 description: Test
 root:
   use: test
+  short: Test command
 commands:
   test:
     use: test
@@ -647,6 +665,7 @@ name: persistent-test
 description: Test
 root:
   use: test
+  short: Test command
   flags:
     - name: global
       type: string
@@ -680,6 +699,7 @@ name: alias-test
 description: Test aliases
 root:
   use: alias-test
+  short: Alias test command
 commands:
   get:
     use: get
@@ -730,6 +750,7 @@ name: alias-exec-test
 description: Test alias execution
 root:
   use: alias-exec-test
+  short: Alias execution test command
 commands:
   get:
     use: get

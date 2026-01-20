@@ -39,6 +39,7 @@ name: file-test
 description: Test from file
 root:
   use: file-test
+  short: File test command
 commands:
   list:
     use: list
@@ -65,6 +66,7 @@ name: test
 description: test
 root:
   use: test
+  short: Test command
   run_func: runRoot
 commands:
   add:
@@ -74,8 +76,10 @@ commands:
     flags:
       - name: force
         type: bool
+        usage: Force operation
       - name: output
         type: string
+        usage: Output format
     args:
       type: exact
       count: 1
@@ -132,6 +136,7 @@ name: test
 description: test
 root:
   use: test
+  short: Test command
 commands:
   add:
     use: add <name>
@@ -141,12 +146,16 @@ commands:
       - name: force
         shorthand: f
         type: bool
+        usage: Force operation
       - name: output-format
         type: string
+        usage: Output format
       - name: count
         type: int
+        usage: Count value
       - name: tags
         type: stringSlice
+        usage: Tags list
     args:
       type: exact
       count: 2
@@ -208,6 +217,7 @@ name: test
 description: test
 root:
   use: test
+  short: Test command
 commands:
   add:
     use: add
@@ -230,6 +240,7 @@ name: test
 description: test
 root:
   use: test
+  short: Test command
 commands:
   hello:
     use: hello
@@ -345,6 +356,7 @@ name: test
 description: test
 root:
   use: test
+  short: Test command
 commands:
   cmd:
     use: cmd
@@ -375,6 +387,7 @@ name: test
 description: test
 root:
   use: test
+  short: Test command
 commands:
   hello:
     use: hello
@@ -405,9 +418,14 @@ commands:
 		t.Error("generated code should import cobrayaml")
 	}
 
-	// Check config path
-	if !strings.Contains(code, `NewCommandBuilder("commands.yaml")`) {
-		t.Error("generated code should contain config path")
+	// Check embed directive
+	if !strings.Contains(code, `//go:embed commands.yaml`) {
+		t.Error("generated code should contain embed directive")
+	}
+
+	// Check uses FromString (embed)
+	if !strings.Contains(code, `NewCommandBuilderFromString(commandsYAML)`) {
+		t.Error("generated code should use NewCommandBuilderFromString")
 	}
 
 	// Check function registrations
@@ -435,6 +453,7 @@ name: test
 description: test
 root:
   use: test
+  short: Test command
   run_func: runRoot
 commands:
   sub:
@@ -467,6 +486,7 @@ name: test
 description: test
 root:
   use: test
+  short: Test command
 commands:
   hello:
     use: hello
@@ -555,6 +575,7 @@ name: test
 description: test
 root:
   use: test
+  short: Test command
 commands:
   hello:
     use: hello
@@ -579,6 +600,7 @@ name: test
 description: test
 root:
   use: test
+  short: Test command
 commands:
   hello:
     use: hello

@@ -259,6 +259,7 @@ func TestGenerator_GenerateDocs_ArgsTypes(t *testing.T) {
 name: test
 root:
   use: test
+  short: Test command
 commands:
   cmd:
     use: cmd
@@ -527,6 +528,7 @@ root:
   flags:
     - name: global
       type: string
+      usage: Global flag
 commands:
   cmd1:
     use: cmd1
