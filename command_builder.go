@@ -201,6 +201,10 @@ func NewCommandBuilder(configPath string) (*CommandBuilder, error) {
 		return nil, fmt.Errorf("failed to unmarshal YAML: %v", err)
 	}
 
+	if err := ValidateConfig(&config); err != nil {
+		return nil, err
+	}
+
 	return &CommandBuilder{
 		config:  &config,
 		funcMap: make(map[string]any),
@@ -212,6 +216,10 @@ func NewCommandBuilderFromString(yamlContent string) (*CommandBuilder, error) {
 	var config ToolConfig
 	if err := yaml.Unmarshal([]byte(yamlContent), &config); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal YAML: %v", err)
+	}
+
+	if err := ValidateConfig(&config); err != nil {
+		return nil, err
 	}
 
 	return &CommandBuilder{

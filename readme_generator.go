@@ -145,9 +145,9 @@ func (g *Generator) collectDocsConfig() *DocsConfig {
 // collectCommandDoc recursively collects documentation for a command and its subcommands
 func (g *Generator) collectCommandDoc(cmd CommandConfig, name string, depth int) CommandDoc {
 	// Extract the command name from Use field (first word)
-	cmdName := strings.Fields(cmd.Use)[0]
-	if cmdName == "" {
-		cmdName = name
+	cmdName := name
+	if fields := strings.Fields(cmd.Use); len(fields) > 0 {
+		cmdName = fields[0]
 	}
 
 	doc := CommandDoc{
@@ -176,7 +176,11 @@ func (g *Generator) collectCommandDoc(cmd CommandConfig, name string, depth int)
 			if !subCmd.Hidden {
 				subDoc := g.collectCommandDoc(subCmd, subName, depth+1)
 				// Update full path for nested commands
-				subDoc.FullPath = doc.FullPath + " " + strings.Fields(subCmd.Use)[0]
+				subCmdName := subName
+				if fields := strings.Fields(subCmd.Use); len(fields) > 0 {
+					subCmdName = fields[0]
+				}
+				subDoc.FullPath = doc.FullPath + " " + subCmdName
 				doc.Subcommands = append(doc.Subcommands, subDoc)
 			}
 		}

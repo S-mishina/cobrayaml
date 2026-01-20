@@ -124,6 +124,7 @@ func (d *DocGenerator) GenerateCodeGenSection() (string, error) {
 	exampleYAML := `name: "example"
 root:
   use: "example"
+  short: "Example CLI tool"
 commands:
   add:
     use: "add <name>"
