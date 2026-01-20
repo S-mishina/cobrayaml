@@ -368,3 +368,231 @@ commands:
 		})
 	}
 }
+
+func TestGenerator_GenerateMain(t *testing.T) {
+	yamlContent := `
+name: test
+description: test
+root:
+  use: test
+commands:
+  hello:
+    use: hello
+    short: Say hello
+    run_func: runHello
+  goodbye:
+    use: goodbye
+    short: Say goodbye
+    run_func: runGoodbye
+`
+	gen, err := NewGeneratorFromString(yamlContent)
+	if err != nil {
+		t.Fatalf("NewGeneratorFromString() error = %v", err)
+	}
+
+	code, err := gen.GenerateMain("main", "commands.yaml")
+	if err != nil {
+		t.Fatalf("GenerateMain() error = %v", err)
+	}
+
+	// Check package declaration
+	if !strings.Contains(code, "package main") {
+		t.Error("generated code should contain 'package main'")
+	}
+
+	// Check imports
+	if !strings.Contains(code, `"github.com/S-mishina/cobrayaml"`) {
+		t.Error("generated code should import cobrayaml")
+	}
+
+	// Check config path
+	if !strings.Contains(code, `NewCommandBuilder("commands.yaml")`) {
+		t.Error("generated code should contain config path")
+	}
+
+	// Check function registrations
+	if !strings.Contains(code, `RegisterFunction("runHello", runHello)`) {
+		t.Error("generated code should register runHello")
+	}
+	if !strings.Contains(code, `RegisterFunction("runGoodbye", runGoodbye)`) {
+		t.Error("generated code should register runGoodbye")
+	}
+
+	// Check BuildRootCommand call
+	if !strings.Contains(code, "BuildRootCommand()") {
+		t.Error("generated code should call BuildRootCommand")
+	}
+
+	// Check Execute call
+	if !strings.Contains(code, "rootCmd.Execute()") {
+		t.Error("generated code should call Execute")
+	}
+}
+
+func TestGenerator_GenerateMain_WithRootRunFunc(t *testing.T) {
+	yamlContent := `
+name: test
+description: test
+root:
+  use: test
+  run_func: runRoot
+commands:
+  sub:
+    use: sub
+    short: Subcommand
+    run_func: runSub
+`
+	gen, err := NewGeneratorFromString(yamlContent)
+	if err != nil {
+		t.Fatalf("NewGeneratorFromString() error = %v", err)
+	}
+
+	code, err := gen.GenerateMain("main", "config.yaml")
+	if err != nil {
+		t.Fatalf("GenerateMain() error = %v", err)
+	}
+
+	// Check both root and sub command functions are registered
+	if !strings.Contains(code, `RegisterFunction("runRoot", runRoot)`) {
+		t.Error("generated code should register runRoot")
+	}
+	if !strings.Contains(code, `RegisterFunction("runSub", runSub)`) {
+		t.Error("generated code should register runSub")
+	}
+}
+
+func TestGenerator_GenerateMainToFile(t *testing.T) {
+	yamlContent := `
+name: test
+description: test
+root:
+  use: test
+commands:
+  hello:
+    use: hello
+    short: Say hello
+    run_func: runHello
+`
+	gen, err := NewGeneratorFromString(yamlContent)
+	if err != nil {
+		t.Fatalf("NewGeneratorFromString() error = %v", err)
+	}
+
+	tmpDir := t.TempDir()
+	outputPath := filepath.Join(tmpDir, "main.go")
+
+	err = gen.GenerateMainToFile("main", "commands.yaml", outputPath)
+	if err != nil {
+		t.Fatalf("GenerateMainToFile() error = %v", err)
+	}
+
+	// Verify file was created
+	content, err := os.ReadFile(outputPath)
+	if err != nil {
+		t.Fatalf("failed to read generated file: %v", err)
+	}
+
+	if !strings.Contains(string(content), "func main()") {
+		t.Error("generated file should contain main function")
+	}
+
+	if !strings.Contains(string(content), "runHello") {
+		t.Error("generated file should contain runHello registration")
+	}
+}
+
+func TestNewGenerator_FileNotFound(t *testing.T) {
+	_, err := NewGenerator("/nonexistent/path/config.yaml")
+	if err == nil {
+		t.Error("expected error for nonexistent file")
+	}
+	if !strings.Contains(err.Error(), "failed to read config file") {
+		t.Errorf("error should mention file read failure, got: %v", err)
+	}
+}
+
+func TestNewGenerator_InvalidYAML(t *testing.T) {
+	tmpDir := t.TempDir()
+	configPath := filepath.Join(tmpDir, "invalid.yaml")
+
+	// Write invalid YAML content
+	invalidYAML := `
+name: test
+  invalid indentation here
+    broken: yaml
+`
+	if err := os.WriteFile(configPath, []byte(invalidYAML), 0644); err != nil {
+		t.Fatalf("failed to write temp file: %v", err)
+	}
+
+	_, err := NewGenerator(configPath)
+	if err == nil {
+		t.Error("expected error for invalid YAML")
+	}
+	if !strings.Contains(err.Error(), "failed to unmarshal YAML") {
+		t.Errorf("error should mention YAML unmarshal failure, got: %v", err)
+	}
+}
+
+func TestNewGeneratorFromString_InvalidYAML(t *testing.T) {
+	invalidYAML := `
+name: test
+  invalid: indentation
+    broken: yaml
+`
+	_, err := NewGeneratorFromString(invalidYAML)
+	if err == nil {
+		t.Error("expected error for invalid YAML")
+	}
+	if !strings.Contains(err.Error(), "failed to unmarshal YAML") {
+		t.Errorf("error should mention YAML unmarshal failure, got: %v", err)
+	}
+}
+
+func TestGenerator_GenerateHandlersToFile_WriteError(t *testing.T) {
+	yamlContent := `
+name: test
+description: test
+root:
+  use: test
+commands:
+  hello:
+    use: hello
+    short: Say hello
+    run_func: runHello
+`
+	gen, err := NewGeneratorFromString(yamlContent)
+	if err != nil {
+		t.Fatalf("NewGeneratorFromString() error = %v", err)
+	}
+
+	// Try to write to an invalid path (nonexistent directory)
+	err = gen.GenerateHandlersToFile("main", "/nonexistent/path/handlers.go")
+	if err == nil {
+		t.Error("expected error when writing to invalid path")
+	}
+}
+
+func TestGenerator_GenerateMainToFile_WriteError(t *testing.T) {
+	yamlContent := `
+name: test
+description: test
+root:
+  use: test
+commands:
+  hello:
+    use: hello
+    short: Say hello
+    run_func: runHello
+`
+	gen, err := NewGeneratorFromString(yamlContent)
+	if err != nil {
+		t.Fatalf("NewGeneratorFromString() error = %v", err)
+	}
+
+	// Try to write to an invalid path (nonexistent directory)
+	err = gen.GenerateMainToFile("main", "commands.yaml", "/nonexistent/path/main.go")
+	if err == nil {
+		t.Error("expected error when writing to invalid path")
+	}
+}

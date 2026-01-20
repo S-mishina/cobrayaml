@@ -22,6 +22,7 @@ func main() {
 
 	rootCmd.AddCommand(genCmd())
 	rootCmd.AddCommand(initCmd())
+	rootCmd.AddCommand(docsCmd())
 
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
@@ -30,18 +31,21 @@ func main() {
 
 func genCmd() *cobra.Command {
 	var (
-		packageName string
-		outputPath  string
+		packageName    string
+		outputPath     string
+		mainOutputPath string
+		force          bool
 	)
 
 	cmd := &cobra.Command{
 		Use:   "gen <commands.yaml>",
-		Short: "Generate handler function stubs from YAML",
-		Long: `Generate Go handler function stubs based on the run_func definitions in your YAML file.
+		Short: "Generate handler function stubs and main.go from YAML",
+		Long: `Generate Go handler function stubs and main.go based on the run_func definitions in your YAML file.
 
 Example:
   cobrayaml gen commands.yaml
-  cobrayaml gen commands.yaml -p mypackage -o handlers.go`,
+  cobrayaml gen commands.yaml -p mypackage -o handlers.go -m main.go
+  cobrayaml gen commands.yaml --force`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			yamlPath := args[0]
@@ -51,36 +55,74 @@ Example:
 				return fmt.Errorf("failed to load YAML: %w", err)
 			}
 
+			dir := filepath.Dir(yamlPath)
 			if outputPath == "" {
-				// Default output path: same directory as YAML, named handlers.go
-				dir := filepath.Dir(yamlPath)
 				outputPath = filepath.Join(dir, "handlers.go")
 			}
+			if mainOutputPath == "" {
+				mainOutputPath = filepath.Join(dir, "main.go")
+			}
 
-			// Check if file already exists
+			// Check if files already exist
+			handlersExist := false
+			mainExist := false
 			if _, err := os.Stat(outputPath); err == nil {
-				fmt.Printf("Warning: %s already exists. Use --force to overwrite.\n", outputPath)
+				handlersExist = true
+			}
+			if _, err := os.Stat(mainOutputPath); err == nil {
+				mainExist = true
+			}
+
+			if (handlersExist || mainExist) && !force {
+				var existingFiles []string
+				if handlersExist {
+					existingFiles = append(existingFiles, outputPath)
+				}
+				if mainExist {
+					existingFiles = append(existingFiles, mainOutputPath)
+				}
+				fmt.Printf("Warning: %v already exist(s). Use --force to overwrite.\n", existingFiles)
 				fmt.Println("Generated code preview:")
 				fmt.Println("------------------------")
+				fmt.Println("// handlers.go")
 				code, err := gen.GenerateHandlers(packageName)
 				if err != nil {
 					return err
 				}
 				fmt.Println(code)
+				fmt.Println("// main.go")
+				mainCode, err := gen.GenerateMain(packageName, filepath.Base(yamlPath))
+				if err != nil {
+					return err
+				}
+				fmt.Println(mainCode)
 				return nil
 			}
 
-			if err := gen.GenerateHandlersToFile(packageName, outputPath); err != nil {
-				return fmt.Errorf("failed to generate handlers: %w", err)
+			// Generate handlers.go
+			if !handlersExist || force {
+				if err := gen.GenerateHandlersToFile(packageName, outputPath); err != nil {
+					return fmt.Errorf("failed to generate handlers: %w", err)
+				}
+				fmt.Printf("Generated handlers at: %s\n", outputPath)
 			}
 
-			fmt.Printf("Generated handlers at: %s\n", outputPath)
+			// Generate main.go
+			if !mainExist || force {
+				if err := gen.GenerateMainToFile(packageName, filepath.Base(yamlPath), mainOutputPath); err != nil {
+					return fmt.Errorf("failed to generate main: %w", err)
+				}
+				fmt.Printf("Generated main at: %s\n", mainOutputPath)
+			}
+
 			return nil
 		},
 	}
 
 	cmd.Flags().StringVarP(&packageName, "package", "p", "main", "Package name for generated code")
-	cmd.Flags().StringVarP(&outputPath, "output", "o", "", "Output file path (default: handlers.go)")
+	cmd.Flags().StringVarP(&outputPath, "output", "o", "", "Output file path for handlers (default: handlers.go)")
+	cmd.Flags().StringVarP(&mainOutputPath, "main", "m", "", "Output file path for main.go (default: main.go)")
+	cmd.Flags().BoolVarP(&force, "force", "f", false, "Overwrite existing files")
 
 	return cmd
 }
@@ -113,9 +155,55 @@ func initCmd() *cobra.Command {
 			fmt.Println("  1. Edit commands.yaml to define your CLI structure")
 			fmt.Println("  2. Run: cobrayaml gen commands.yaml")
 			fmt.Println("  3. Implement your handler functions in handlers.go")
+			fmt.Println("  4. Run: go run . [command]")
 			return nil
 		},
 	}
+
+	return cmd
+}
+
+func docsCmd() *cobra.Command {
+	var outputPath string
+
+	cmd := &cobra.Command{
+		Use:   "docs <commands.yaml>",
+		Short: "Generate README documentation from YAML",
+		Long: `Generate comprehensive README documentation based on your YAML configuration.
+
+Example:
+  cobrayaml docs commands.yaml
+  cobrayaml docs commands.yaml -o README.md`,
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			yamlPath := args[0]
+
+			gen, err := cobrayaml.NewGenerator(yamlPath)
+			if err != nil {
+				return fmt.Errorf("failed to load YAML: %w", err)
+			}
+
+			if outputPath == "" {
+				// Output to stdout
+				docs, err := gen.GenerateDocs()
+				if err != nil {
+					return fmt.Errorf("failed to generate docs: %w", err)
+				}
+				fmt.Print(docs)
+				return nil
+			}
+
+			// Output to file
+			if err := gen.GenerateDocsToFile(outputPath); err != nil {
+				return fmt.Errorf("failed to generate docs: %w", err)
+			}
+
+			fmt.Printf("Generated documentation at: %s\n", outputPath)
+			return nil
+		},
+	}
+
+	cmd.Flags().StringVarP(&outputPath, "output", "o", "", "Output file path (default: stdout)")
 
 	return cmd
 }
