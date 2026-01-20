@@ -20,7 +20,7 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		panic("failed to create temp dir: " + err.Error())
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	binaryName := "cobrayaml"
 	if runtime.GOOS == "windows" {
@@ -923,11 +923,7 @@ commands:
 		t.Run(strings.Join(tc.args, "_"), func(t *testing.T) {
 			cmd := exec.Command(binaryPath, tc.args...)
 			cmd.Dir = tmpDir
-			output, err := cmd.CombinedOutput()
-			if err != nil {
-				// --version returns exit code 0 but some commands may fail
-				// Only fail if we expected certain content and don't have it
-			}
+			output, _ := cmd.CombinedOutput()
 
 			for _, expected := range tc.expected {
 				if !strings.Contains(string(output), expected) {
