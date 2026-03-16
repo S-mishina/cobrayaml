@@ -16,7 +16,6 @@ jobs:
       contents: read
     uses: S-mishina/reusable-workflows/.github/workflows/go-lint.yml@main
     with:
-      golangci-lint-version: v1.61
       args: --timeout=5m
 
   build:
