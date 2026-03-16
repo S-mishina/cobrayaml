@@ -34,6 +34,10 @@ jobs:
       pr-comment: true
       upload-coverage: true
 
+  e2e:
+    name: E2E Test
+    uses: ./.github/workflows/e2e-test.yml
+
   security:
     permissions:
       contents: read
