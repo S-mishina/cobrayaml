@@ -17,7 +17,6 @@ jobs:
     uses: S-mishina/reusable-workflows/.github/workflows/go-lint.yml@main
     with:
       golangci-lint-version: v1.61
-      golangci-lint-action-version: v6
       args: --timeout=5m
 
   build:
@@ -35,6 +34,7 @@ jobs:
       upload-coverage: true
 
   e2e:
+    if: github.event_name == 'pull_request'
     name: E2E Test
     uses: ./.github/workflows/e2e-test.yml
 
