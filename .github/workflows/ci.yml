@@ -12,23 +12,30 @@ permissions:
 
 jobs:
   lint:
-    name: Lint
-    uses: ./.github/workflows/lint.yml
+    permissions:
+      contents: read
+    uses: S-mishina/reusable-workflows/.github/workflows/go-lint.yml@main
+    with:
+      golangci-lint-version: v1.61
+      golangci-lint-action-version: v6
+      args: --timeout=5m
 
   build:
-    name: Build
-    uses: ./.github/workflows/go-build.yml
+    permissions:
+      contents: read
+    uses: S-mishina/reusable-workflows/.github/workflows/go-build.yml@main
 
   test:
-    name: Test
-    uses: ./.github/workflows/go-test.yml
+    permissions:
+      contents: read
+      pull-requests: write
+    uses: S-mishina/reusable-workflows/.github/workflows/go-test.yml@main
+    with:
+      pr-comment: true
+      upload-coverage: true
 
   security:
-    name: Security Scan
-    uses: ./.github/workflows/trivy-scan.yml
-    with:
-      scan-type: 'fs'
-      scan-ref: '.'
-      severity: 'HIGH,CRITICAL'
-      ignore-unfixed: true
-      exit-code: '1'
+    permissions:
+      contents: read
+      security-events: write
+    uses: S-mishina/reusable-workflows/.github/workflows/trivy-scan.yml@main
